@@ -1,0 +1,89 @@
+/*
+ * ENC_DRIVE.c
+ *
+ *  Created on: Feb 17, 2026
+ *      Author: Mohammed Hossam
+ */
+
+#include "robot_driver.h"
+
+void Robot_Init(Robot_Odometry_t *robot, TIM_HandleTypeDef *htim_left, TIM_HandleTypeDef *htim_right, MPU6050_t *MPUcfg) {
+
+	// 1. Initialize Left Encoder (Distance/Speed only)
+	robot->left_enc.htim = htim_left;
+	robot->left_enc.last_counter_value = 0;
+	robot->left_enc.total_ticks = 0;
+	robot->left_enc.velocity_m_s = 0;
+	robot->left_enc.dist_traveled_m = 0;
+	robot->left_enc.is_32bit = 1;
+
+	// 2. Initialize Right Encoder (Distance/Speed only)
+	robot->right_enc.htim = htim_right;
+	robot->right_enc.last_counter_value = 0;
+	robot->right_enc.total_ticks = 0;
+	robot->right_enc.velocity_m_s = 0;
+	robot->right_enc.dist_traveled_m = 0;
+	robot->right_enc.is_32bit= 0;
+
+	// 3. Initialize Global Robot Pose
+	robot->x_m = 0.0f;
+	robot->y_m = 0.0f;
+	robot->theta_rad = 0.0f;
+	MPUcfg->MPU_Yaw=0;
+
+	// 4. Start Hardware Timers
+	// Important: We use 0 to MAX_ARR in CubeMX so the counter loops naturally.
+	HAL_TIM_Encoder_Start(htim_left, TIM_CHANNEL_ALL);
+	HAL_TIM_Encoder_Start(htim_right, TIM_CHANNEL_ALL);
+}
+
+// Helper to update one wheel
+static void Update_Single_Encoder(Encoder_t *enc, float dt) {
+	int32_t delta = 0;
+	enc->current_counter_value= __HAL_TIM_GET_COUNTER(enc->htim);
+
+	// Handle wrapping (overflow/underflow)
+	// We cast to int16_t if using 16-bit timer, or int32_t for 32-bit timer.
+	// Assuming 32-bit TIM2/TIM5 here. Use (int16_t) if using TIM3/TIM4!
+	if(enc->is_32bit){
+		delta = (int32_t)(enc->current_counter_value- enc->last_counter_value);
+	}
+	else {
+		delta = (int16_t)(enc->current_counter_value- enc->last_counter_value);
+	}
+	enc->last_counter_value = enc->current_counter_value;
+	enc->total_ticks += delta;
+	enc->last_delta = delta;
+	enc->dist_traveled_m = delta * METERS_PER_TICK;
+
+	if (dt > 0.0001f) {
+		enc->velocity_m_s = enc->dist_traveled_m / dt;
+	}
+}
+
+void Robot_Update(Robot_Odometry_t *robot,MPU6050_t *MPUcfg ,float dt) {
+	// 1. Read Hardware
+	//Encoder
+	Update_Single_Encoder(&robot->left_enc, dt);
+	Update_Single_Encoder(&robot->right_enc, dt);
+	//MPU
+	MPU6050_Read_All(&hi2c1, MPUcfg, dt);
+
+
+	// 2. Calculate
+	// Kinematics
+	float d_L = robot->left_enc.dist_traveled_m;
+	float d_R = robot->right_enc.dist_traveled_m;
+	float d_center = (d_L + d_R) / 2.0f;
+	float phi = (d_R - d_L) / ROBOT_WIDTH_M;
+	//sensor fusion for yaw
+	float mpu_yaw_rad = MPUcfg->MPU_Yaw * (M_PI / 180.0f);
+	robot->theta_rad = (0.95f * mpu_yaw_rad) + (0.05f * (robot->theta_rad + phi));
+	// 3. Update Global Pose
+	robot->x_m += d_center * cosf(robot->theta_rad);
+	robot->y_m += d_center * sinf(robot->theta_rad);
+
+	// Normalize angle (-PI to PI)
+	if (robot->theta_rad > M_PI) robot->theta_rad -= 2.0f * M_PI;
+	if (robot->theta_rad < -M_PI) robot->theta_rad += 2.0f * M_PI;
+}

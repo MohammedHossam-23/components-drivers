@@ -28,6 +28,8 @@ static void delay_us(TIM_HandleTypeDef *htim, uint32_t us) {
 }
 
 void HC_SR04_init(HC_SR04_t *sr04_struct, TIM_HandleTypeDef *htim) {
+
+
     // Link the free-running timer to the sensor structure
     sr04_struct->htim = htim;
 
