@@ -57,12 +57,13 @@ void VL6180X_Init(I2C_HandleTypeDef *hi2c) {
 bool VL6180X_IsCliffDetected(I2C_HandleTypeDef *hi2c) {
 
 	// 1. read if the measurement is ready
-	// The lowest 3 bits [2:0] will be equal to 4 when a new sample is ready
+	// The lowest 3 bits [2:0] will be equal to  4: New Sample Ready threshold event
 	uint8_t status = ReadReg16(hi2c, VL6180X_REG_RESULT_INTERRUPT_STATUS_GPIO) & 0x07;
 	if (status == 0x04) {
 		// 2. Read error code and measured distance
 		// The error code is located in the upper 4 bits [7:4] of the status register
 		uint8_t error_code = ReadReg16(hi2c, VL6180X_REG_RESULT_RANGE_STATUS) >> 4;
+		//result__range_val: Final range result value presented to the user for use. Unit is in mm.
 		uint8_t distance = ReadReg16(hi2c, VL6180X_REG_RESULT_RANGE_VAL);
 
 		// 3. Clear the interrupt to allow the sensor to prepare for the next measurement
