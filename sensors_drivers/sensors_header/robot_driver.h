@@ -46,7 +46,6 @@ typedef struct {
     float theta_rad;
 } Robot_Odometry_t;
 
-void Robot_Init(Robot_Odometry_t *robot, TIM_HandleTypeDef *htim_left, TIM_HandleTypeDef *htim_right);
-void Robot_Update(Robot_Odometry_t *robot, float dt);
-
+void Robot_Init(Robot_Odometry_t *robot, TIM_HandleTypeDef *htim_left, TIM_HandleTypeDef *htim_right, MPU6050_t *MPUcfg);
+void Robot_Update(Robot_Odometry_t *robot,I2C_HandleTypeDef *I2Cx ,MPU6050_t *MPUcfg ,float dt);
 #endif /* STM32F4XX_HAL_DRIVER_INC_SENSORS_HEADER_ROBOT_DRIVER_H_ */

@@ -7,6 +7,8 @@
 
 #include "robot_driver.h"
 
+
+
 void Robot_Init(Robot_Odometry_t *robot, TIM_HandleTypeDef *htim_left, TIM_HandleTypeDef *htim_right, MPU6050_t *MPUcfg) {
 
 	// 1. Initialize Left Encoder (Distance/Speed only)
@@ -61,13 +63,14 @@ static void Update_Single_Encoder(Encoder_t *enc, float dt) {
 	}
 }
 
-void Robot_Update(Robot_Odometry_t *robot,MPU6050_t *MPUcfg ,float dt) {
+void Robot_Update(Robot_Odometry_t *robot,I2C_HandleTypeDef *I2Cx ,MPU6050_t *MPUcfg ,float dt) {
+
 	// 1. Read Hardware
 	//Encoder
 	Update_Single_Encoder(&robot->left_enc, dt);
 	Update_Single_Encoder(&robot->right_enc, dt);
 	//MPU
-	MPU6050_Read_All(&hi2c1, MPUcfg, dt);
+	MPU6050_Read_All(I2Cx, MPUcfg, dt);
 
 
 	// 2. Calculate
