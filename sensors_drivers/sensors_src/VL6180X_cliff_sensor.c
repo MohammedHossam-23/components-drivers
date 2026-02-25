@@ -74,8 +74,10 @@ bool VL6180X_IsCliffDetected(I2C_HandleTypeDef *hi2c) {
 		if (error_code != 0 || distance > CLIFF_THRESHOLD_MM) {
 			return last_cliff_state = true;  // DANGER! Cliff detected
 		}
+		else {
+			return last_cliff_state = false; // SAFE, ground is detected within limits
 
-		return last_cliff_state = false; // SAFE, ground is detected within limits
+		}
 
 	}
 
