@@ -15,8 +15,7 @@
 
 /* I2C 7-bit Address */
 #define VL6180X_I2C_ADDR 0x29
-//#define VL6180X_2_I2C_ADDR 0xXX
-//#define VL6180X_3_I2C_ADDR 0xXX
+
 
 /* Essential registers only for maximum speed cliff detection */
 #define VL6180X_REG_SYSTEM_INTERRUPT_CLEAR                  0x0015
@@ -27,20 +26,28 @@
 #define VL6180X_REG_RESULT_INTERRUPT_STATUS_GPIO            0x004F
 #define VL6180X_REG_RESULT_RANGE_VAL                        0x0062
 #define VL6180X_REG_READOUT_AVERAGING_SAMPLE_PERIOD         0x010A
-
+#define VL6180X_REG_I2C_SLAVE_DEVICE_ADDRESS                0x0212
 
 /* Cliff Settings */
 #define CLIFF_THRESHOLD_MM 60  // Distance in millimeters to be considered a cliff
-
 
 #define bool	_Bool
 #define true	1
 #define false	0
 
+typedef struct{
+	I2C_HandleTypeDef *hi2c;
+	uint8_t i2c_address;
+	bool last_cliff_state ;
+}VL6180X_t;
+
+
 
 /* Function Prototypes */
-void VL6180X_Init(I2C_HandleTypeDef *hi2c);
-bool VL6180X_IsCliffDetected(I2C_HandleTypeDef *hi2c);
+
+void VL6180X_ChangeAddress(VL6180X_t *cliff_sensor,uint8_t new_address);
+void VL6180X_Init(VL6180X_t *cliff_sensor);
+bool VL6180X_IsCliffDetected(VL6180X_t *cliff_sensor);
 
 
 
