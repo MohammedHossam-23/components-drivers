@@ -11,13 +11,13 @@
 
 // --- Custom I2C Wrapper Functions ---
 static void WriteReg16(VL6180X_t *cliff_sensor, uint16_t reg, uint8_t value) {
-    HAL_I2C_Mem_Write(cliff_sensor->hi2c, (cliff_sensor->i2c_address << 1), reg, I2C_MEMADD_SIZE_16BIT, &value, 1, 100);
+	HAL_I2C_Mem_Write(cliff_sensor->hi2c, (cliff_sensor->i2c_address << 1), reg, I2C_MEMADD_SIZE_16BIT, &value, 1, 100);
 }
 
 static uint8_t ReadReg16(VL6180X_t *cliff_sensor, uint16_t reg) {
-    uint8_t value = 0;
-    HAL_I2C_Mem_Read(cliff_sensor->hi2c, (cliff_sensor->i2c_address << 1), reg, I2C_MEMADD_SIZE_16BIT, &value, 1, 100);
-    return value;
+	uint8_t value = 0;
+	HAL_I2C_Mem_Read(cliff_sensor->hi2c, (cliff_sensor->i2c_address << 1), reg, I2C_MEMADD_SIZE_16BIT, &value, 1, 100);
+	return value;
 }// -------------------------------------------------------------------------
 
 void VL6180X_ChangeAddress(VL6180X_t *cliff_sensor,uint8_t new_address)
@@ -31,7 +31,15 @@ void VL6180X_ChangeAddress(VL6180X_t *cliff_sensor,uint8_t new_address)
 void VL6180X_Init(VL6180X_t *cliff_sensor) {
 	// 1. Wait for the device to be ready
 	// Bit 0 of RESULT_RANGE_STATUS indicates if the device is ready
+	//uint32_t start_time = HAL_GetTick()
 	while ((ReadReg16(cliff_sensor, VL6180X_REG_RESULT_RANGE_STATUS) & 0x01) == 0);
+//	{
+//		if ((HAL_GetTick() - start_time) > 100) { // Timeout 100 ms
+//			//i2c error handling
+//			cliff_sensor->last_cliff_state = true;
+//			return;
+//		}
+//	}
 
 	// 2. Configure for maximum speed
 	// Reduce readout averaging sample period to decrease measurement time

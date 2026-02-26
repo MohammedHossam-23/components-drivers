@@ -30,7 +30,7 @@ typedef struct {
     uint32_t last_counter_value;
     int64_t total_ticks;
     float velocity_m_s;
-    float dist_traveled_m;
+    float delta_distance_m;
     uint8_t is_32bit;
     int32_t last_delta;
 } Encoder_t;
