@@ -39,12 +39,12 @@
 // ==========================================
 typedef struct {
     ADC_HandleTypeDef *hadc;
-    float battery_capacity_ah;  // Total designed capacity of the battery in Ampere-hours (Ah)
-    float remaining_charge_ah;  // Current remaining charge in Ah
+    double battery_capacity_ah;  // Total designed capacity of the battery in Ampere-hours (Ah)
+    double remaining_charge_ah;  // Current remaining charge in Ah
 
-    float zero_current_voltage; // Calibrated voltage output of the sensor at 0 Amps
-    float current_amps;         // Instantaneous raw current reading
-    float filtered_amps;        // Smoothed current reading after applying EMA filter
+    double zero_current_voltage; // Calibrated voltage output of the sensor at 0 Amps
+    double current_amps;         // Instantaneous raw current reading
+    double filtered_amps;        // Smoothed current reading after applying EMA filter
 
     uint32_t last_tick;         // Timestamp for calculating time delta (dt) in Coulomb Counting
     bool is_calibrated;         // Flag to ensure the sensor is calibrated before usage
@@ -53,7 +53,7 @@ typedef struct {
 // ==========================================
 // Function Prototypes
 // ==========================================
-void ACS758_Init(ACS758_Handle *sensor, ADC_HandleTypeDef *hadc, float capacity_ah);
+void ACS758_Init(ACS758_Handle *sensor, ADC_HandleTypeDef *hadc, double capacity_ah);
 void ACS758_Calibrate(ACS758_Handle *sensor, uint32_t raw_adc_avg);
 void ACS758_Update(ACS758_Handle *sensor, uint32_t raw_adc_current);
 void ACS758_UpdateSoCWithVoltage(ACS758_Handle *sensor, uint32_t raw_adc_voltage);
