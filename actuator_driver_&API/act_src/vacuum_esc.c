@@ -8,21 +8,21 @@
 #include "vacuum_esc.h"
 
 // --- Hardware Configuration ---
-extern TIM_HandleTypeDef htim3;
-#define VACUUM_TIM_CHANNEL TIM_CHANNEL_1
+extern TIM_HandleTypeDef htim4;
+#define VACUUM_TIM_CHANNEL TIM_CHANNEL_3
 
 // --- 16-bit ARR Configuration ---
-// Must match the "Counter Period" in CubeMX
+// 16 bit "Counter Period" in CubeMX
 #define VACUUM_TIMER_ARR 65535
 
 static VacuumState_t current_state = VACUUM_OFF;
 
 void Vacuum_ESC_Init(void) {
     // Start the PWM generation
-    HAL_TIM_PWM_Start(&htim3, VACUUM_TIM_CHANNEL);
+    HAL_TIM_PWM_Start(&htim4, VACUUM_TIM_CHANNEL);
 
     // Arm the ESC with a 0% duty cycle
-    __HAL_TIM_SET_COMPARE(&htim3, VACUUM_TIM_CHANNEL, 0);
+    __HAL_TIM_SET_COMPARE(&htim4, VACUUM_TIM_CHANNEL, 0);
 
     // Give the ESC time to recognize the arming signal before RTOS starts
     HAL_Delay(2000);
@@ -33,11 +33,11 @@ void Vacuum_ESC_Init(void) {
 void Vacuum_ESC_SetState(VacuumState_t state) {
     if (state == VACUUM_ON) {
         // Set to 100% Duty Cycle (Full Speed)
-        __HAL_TIM_SET_COMPARE(&htim3, VACUUM_TIM_CHANNEL, VACUUM_TIMER_ARR);
+        __HAL_TIM_SET_COMPARE(&htim4, VACUUM_TIM_CHANNEL, VACUUM_TIMER_ARR);
         current_state = VACUUM_ON;
     } else {
         // Set to 0% Duty Cycle (Off)
-        __HAL_TIM_SET_COMPARE(&htim3, VACUUM_TIM_CHANNEL, 0);
+        __HAL_TIM_SET_COMPARE(&htim4, VACUUM_TIM_CHANNEL, 0);
         current_state = VACUUM_OFF;
     }
 }
