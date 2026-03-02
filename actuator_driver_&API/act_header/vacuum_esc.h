@@ -13,7 +13,9 @@
 // --- Operating States ---
 typedef enum {
     VACUUM_OFF = 0,
-    VACUUM_ON  = 1
+    VACUUM_LOW  = 1,
+    VACUUM_MED  ,
+    VACUUM_HIGH
 } VacuumState_t;
 
 // --- API Functions ---

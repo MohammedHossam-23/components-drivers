@@ -16,8 +16,8 @@ typedef enum {
     MOTOR_RIGHT = 1
 } DriveMotorId_t;
 
-// Maximum PWM value based on  32-bit Timer ARR
-#define DRIVE_MAX_PWM 4294967295
+// Maximum PWM based ARR Value
+#define DRIVE_MAX_PWM 5000
 
 /**
  * @brief Initializes PWM timers and Direction GPIOs.
