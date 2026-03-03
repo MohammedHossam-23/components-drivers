@@ -31,12 +31,25 @@ void Robot_Init(Robot_Odometry_t *robot, TIM_HandleTypeDef *htim_left, TIM_Handl
 	robot->x_m = 0.0f;
 	robot->y_m = 0.0f;
 	robot->theta_rad = 0.0f;
+	robot->gyro_bias_z = 0.0f;
 	MPUcfg->MPU_Yaw=0;
 
 	// 4. Start Hardware Timers
 	// Important: We use 0 to MAX_ARR in CubeMX so the counter loops naturally.
 	HAL_TIM_Encoder_Start(htim_left, TIM_CHANNEL_ALL);
 	HAL_TIM_Encoder_Start(htim_right, TIM_CHANNEL_ALL);
+}
+
+void Robot_Calibrate_Gyro(I2C_HandleTypeDef *I2Cx, MPU6050_t *MPUcfg, Robot_Odometry_t *robot) {
+	float sum_gz = 0;
+	const int samples = 1000;
+
+	for (int i = 0; i < samples; i++) {
+		MPU6050_Read_All(I2Cx, MPUcfg, 0.0f); // Read raw data
+		sum_gz += MPUcfg->Gz;
+		HAL_Delay(1); // Small delay for sampling
+	}
+	robot->gyro_bias_z = sum_gz / (float)samples;
 }
 
 // Helper to update one wheel
@@ -59,7 +72,9 @@ static void Update_Single_Encoder(Encoder_t *enc, float dt) {
 	enc->delta_distance_m = delta * METERS_PER_TICK;
 
 	if (dt > 0.0001f) {
-		enc->velocity_m_s = enc->dist_traveled_m / dt;
+		// RPM = (delta * 60) / (PPR * dt)
+		enc->measured_rpm = (float)(enc->last_delta * 60.0f) / (ENCODER_PPR * dt);
+		enc->velocity_m_s = enc->delta_distance_m/ dt;
 	}
 }
 
@@ -82,27 +97,39 @@ void Robot_Update(Robot_Odometry_t *robot,I2C_HandleTypeDef *I2Cx ,MPU6050_t *MP
 	// Formula: (Right_Distance - Left_Distance) / Robot_Track_Width
 	float delta_yaw_enc = (d_R - d_L) / ROBOT_WIDTH_M;
 
-	// 4. Calculate Delta Yaw from Gyroscope
-	// Convert Gz from degrees/sec to radians/sec, then multiply by dt
-	// Note: Gz must be the rotation around the Z-axis (perpendicular to the ground)
-	float gyro_z_rad_s = MPUcfg->Gz * (M_PI / 180.0f);
+	// 4.Yaw from Gyro (Corrected with Bias)
+	float corrected_gz = MPUcfg->Gz - robot->gyro_bias_z;
+	float gyro_z_rad_s = corrected_gz * (M_PI / 180.0f);
 	float delta_yaw_gyro = gyro_z_rad_s * dt;
+
+//	// 4. Calculate Delta Yaw from Gyroscope
+//	// Convert Gz from degrees/sec to radians/sec, then multiply by dt
+//	// Note: Gz must be the rotation around the Z-axis (perpendicular to the ground)
+//	float gyro_z_rad_s = MPUcfg->Gz * (M_PI / 180.0f);
+//	float delta_yaw_gyro = gyro_z_rad_s * dt;
 
 	// 5. YAW SENSOR FUSION (Delta Fusion via Complementary Filter)
 	// High trust in Gyro (0.95): It is fast and highly accurate in the short term.
 	// Low trust in Encoders (0.05): It acts as a reference to pull the Gyro back and prevent long-term drift.
-	float fused_delta_yaw = (0.95f * delta_yaw_gyro) + (0.05f * delta_yaw_enc);
+	float fused_delta_yaw = (0.98f * delta_yaw_gyro) + (0.02f * delta_yaw_enc);
 
+	// --- 4. MIDPOINT INTEGRATION (The "Math Fix") ---
+	// We use the angle at the middle of the movement for better arc accuracy
+	float travel_angle = robot->theta_rad + (fused_delta_yaw / 2.0f);
 	// 6. Update Global Robot Pose (Odometry)
-	robot->theta_rad += fused_delta_yaw;
-	robot->x_m += d_center * cosf(robot->theta_rad);
-	robot->y_m += d_center * sinf(robot->theta_rad);
 
+	robot->x_m += d_center * cosf(travel_angle);
+	robot->y_m += d_center * sinf(travel_angle);
+	robot->theta_rad += fused_delta_yaw;
 	// 7. Normalize the heading angle to keep it strictly between -PI and PI
-	if (robot->theta_rad > M_PI) {
-		robot->theta_rad -= 2.0f * M_PI;
+	if (robot->theta_rad > PI_f) {
+		robot->theta_rad -= 2.0f * PI_f;
 	}
-	else if (robot->theta_rad < -M_PI) {
-		robot->theta_rad += 2.0f * M_PI;
+	else if (robot->theta_rad < -PI_f) {
+		robot->theta_rad += 2.0f * PI_f;
 	}
+//	//another method Normalize the heading angle to keep it strictly between -PI and PI
+//	while (robot->theta_rad >  PI_f) robot->theta_rad -= 2.0f * PI_f;
+//	while (robot->theta_rad < -PI_f) robot->theta_rad += 2.0f * PI_f;
+
 }

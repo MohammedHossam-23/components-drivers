@@ -8,6 +8,8 @@
 #ifndef ACTUATOR_DRIVER__API_ACT_SRC_PID_CONTROLLER_H_
 #define ACTUATOR_DRIVER__API_ACT_SRC_PID_CONTROLLER_H_
 
+#include "drive_motor.h"
+#include "robot_driver.h"
 typedef struct {
     // Tuning Parameters
     float Kp;

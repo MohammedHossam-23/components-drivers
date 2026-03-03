@@ -55,25 +55,25 @@ typedef struct {
     int16_t Gyro_Z_RAW;
 
     // Converted Data (Physical values)
-    double Ax;  // Units: g
-    double Ay;
-    double Az;
-    double Gx;  // Units: deg/s
-    double Gy;
-    double Gz;
+    float Ax;  // Units: g
+    float Ay;
+    float Az;
+    float Gx;  // Units: deg/s
+    float Gy;
+    float Gz;
 
 
     //calc gyro and Accel Roll (X) and Pitch (Y)
 
-    double AccAngleRoll;
-    double AccAnglePitch;
+    float AccAngleRoll;
+    float AccAnglePitch;
 
     // Final Filtered Angles
-    double FinalAngleRoll;
-    double FinalAnglePitch;
-    double MPU_Yaw;
+    float FinalAngleRoll;
+    float FinalAnglePitch;
+    float MPU_Yaw;
     //delta time
-    double dt;
+    float dt;
 
 } MPU6050_t;
 

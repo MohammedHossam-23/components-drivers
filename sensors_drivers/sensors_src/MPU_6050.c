@@ -170,62 +170,58 @@ void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *MPUcfg , double dt)
 //===================================================
 //			dt (Detla Time) sudo implemention
 //===================================================
-/*
- *void vSensingAndControlTask(void * pvParameters) {
-    // 1. التوقيت الثابت (كما هو في مخططك)
-    TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = pdMS_TO_TICKS(10); // 10ms = 100Hz
-    const double dt = 0.01; // القيمة الثابتة التي ستستخدمها في كل المعادلات
-
-    for(;;) {
-        // انتظر حتى يحين موعد الدورة القادمة بدقة
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
-
-        // 2. Read Sensors (MPU, Encoders, etc.)
-        // استدعِ دالة القراءة التي كتبناها ومرر لها dt الثابت
-        MPU6050_Read_And_Process(&hi2c1, &myMPUStruct, dt);
-
-        // 3. Odometry & PID
-        // استخدم نفس الـ dt لحساب المسافة من الانكودر والـ PID
-        Calculate_Odometry(&myOdomStruct, dt);
-        Run_PID_Controllers(dt);
-
-        // 4. Share Data (Update Global Vars)
-        Update_Global_Variables();
-    }
-}
- *
- * /
+//
+// *void vSensingAndControlTask(void * pvParameters) {
+//    // 1. التوقيت الثابت (كما هو في مخططك)
+//    TickType_t xLastWakeTime = xTaskGetTickCount();
+//    const TickType_t xFrequency = pdMS_TO_TICKS(10); // 10ms = 100Hz
+//    const double dt = 0.01; // القيمة الثابتة التي ستستخدمها في كل المعادلات
+//
+//    for(;;) {
+//        // انتظر حتى يحين موعد الدورة القادمة بدقة
+//        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+//
+//        // 2. Read Sensors (MPU, Encoders, etc.)
+//        // استدعِ دالة القراءة التي كتبناها ومرر لها dt الثابت
+//        MPU6050_Read_And_Process(&hi2c1, &myMPUStruct, dt);
+//
+//        // 3. Odometry & PID
+//        // استخدم نفس الـ dt لحساب المسافة من الانكودر والـ PID
+//        Calculate_Odometry(&myOdomStruct, dt);
+//        Run_PID_Controllers(dt);
+//
+//        // 4. Share Data (Update Global Vars)
+//        Update_Global_Variables();
+//    }
+//}
+// *
+// * /
 
 // another method
-/*
- * void vSensingAndControlTask(void * pvParameters) {
-    TickType_t xLastWakeTime = xTaskGetTickCount();
-    TickType_t previous_time = xLastWakeTime;
-    const TickType_t xFrequency = pdMS_TO_TICKS(10); // الهدف: 10ms
-
-    for(;;) {
-        // 1. نام لحد ما الـ 10ms تخلص
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
-
-        // 2. احسب الـ dt الفعلي اللي عدى بجد (عشان لو الـ RTOS اتأخر ملي ثانية ولا حاجة)
-        TickType_t current_time = xTaskGetTickCount();
-        float actual_dt = (float)(current_time - previous_time) / 1000.0f;
-        previous_time = current_time;
-
-        // 3. مرر الـ dt الحقيقي والموحد لكل الروبوت
-        ACS758_Update(&myBattery, adc_buffer[0], actual_dt);
-        MPU6050_Read_And_Process(&hi2c1, &myMPUStruct, actual_dt);
-        Calculate_Odometry(&myOdomStruct, actual_dt);
-        Run_PID_Controllers(actual_dt);
-        Update_Global_Variables();
-    }
-}
- * */
 
 
-
-
+// * void vSensingAndControlTask(void * pvParameters) {
+//    TickType_t xLastWakeTime = xTaskGetTickCount();
+//    TickType_t previous_time = xLastWakeTime;
+//    const TickType_t xFrequency = pdMS_TO_TICKS(10); // الهدف: 10ms
+//
+//    for(;;) {
+//        // 1. نام لحد ما الـ 10ms تخلص
+//        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+//
+//        // 2. احسب الـ dt الفعلي اللي عدى بجد (عشان لو الـ RTOS اتأخر ملي ثانية ولا حاجة)
+//        TickType_t current_time = xTaskGetTickCount();
+//        float actual_dt = (float)(current_time - previous_time) / 1000.0f;
+//        previous_time = current_time;
+//
+//        // 3. مرر الـ dt الحقيقي والموحد لكل الروبوت
+//        ACS758_Update(&myBattery, adc_buffer[0], actual_dt);
+//        MPU6050_Read_And_Process(&hi2c1, &myMPUStruct, actual_dt);
+//        Calculate_Odometry(&myOdomStruct, actual_dt);
+//        Run_PID_Controllers(actual_dt);
+//        Update_Global_Variables();
+//    }
+//}
 
 
 //
@@ -250,4 +246,3 @@ void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *MPUcfg , double dt)
 //	DataStruct->AnglePitch = COMPLEMENTARY_ALPHA * (DataStruct->AnglePitch + DataStruct->Gy * dt)
 //                        														   + (1.0 - COMPLEMENTARY_ALPHA) * accel_pitch;
 //}
-*/

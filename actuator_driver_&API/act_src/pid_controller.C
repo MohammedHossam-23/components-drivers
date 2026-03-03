@@ -9,7 +9,7 @@
 #include "pid_controller.h"
 
 // Since your loop runs strictly at 100Hz (10ms), dt is a constant 0.01 seconds.
-#define DT_SECONDS 0.01f
+//#define DT_SECONDS 0.01f
 
 void PID_Init(PID_Controller_t *pid, float kp, float ki, float kd, float max_out) {
     pid->Kp = kp;
@@ -21,14 +21,14 @@ void PID_Init(PID_Controller_t *pid, float kp, float ki, float kd, float max_out
     pid->max_integral = max_out; // Anti-windup threshold
 }
 
-int32_t PID_Compute(PID_Controller_t *pid, float setpoint_rpm, float measured_rpm) {
+int32_t PID_Compute(PID_Controller_t *pid, float setpoint_rpm, float measured_rpm,float dt ) {
     float error = setpoint_rpm - measured_rpm;
 
     // Proportional
     float p_term = pid->Kp * error;
 
     // Integral with Anti-Windup
-    pid->integral_sum += (error * DT_SECONDS);
+    pid->integral_sum += (error * dt);
 
     // Clamp the integrator to prevent it from spooling up to infinity if the wheels get stuck
     if (pid->integral_sum > pid->max_integral) pid->integral_sum = pid->max_integral;
@@ -84,6 +84,10 @@ void vSensingAndControlTask(void *pvParameters) {
             PID_ResetIntegrator(&pid_left);
             PID_ResetIntegrator(&pid_right);
         } else {
+
+        	float measured_l = robot.left_enc.measured_rpm;
+        	float measured_r = robot.right_enc.measured_rpm;
+
             // NORMAL CONTROL: Compute PID and drive
             int32_t pwm_l = PID_Compute(&pid_left,  target_rpm_l, measured_rpm_l);
             int32_t pwm_r = PID_Compute(&pid_right, target_rpm_r, measured_rpm_r);

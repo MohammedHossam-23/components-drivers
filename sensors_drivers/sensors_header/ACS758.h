@@ -53,9 +53,9 @@ typedef struct {
 // ==========================================
 // Function Prototypes
 // ==========================================
-void ACS758_Init(ACS758_Handle *sensor, ADC_HandleTypeDef *hadc, double capacity_ah);
+void ACS758_Init(ACS758_Handle *sensor, ADC_HandleTypeDef *hadc, float capacity_ah);
 void ACS758_Calibrate(ACS758_Handle *sensor, uint32_t raw_adc_avg);
-void ACS758_Update(ACS758_Handle *sensor, uint32_t raw_adc_current);
+void ACS758_Update(ACS758_Handle *sensor, uint32_t raw_adc_current , float dt) ;
 void ACS758_UpdateSoCWithVoltage(ACS758_Handle *sensor, uint32_t raw_adc_voltage);
 float ACS758_GetSoC(ACS758_Handle *sensor);
 
